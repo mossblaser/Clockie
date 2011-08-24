@@ -12,7 +12,7 @@ UnicomReceiver::UnicomReceiver(int analogPin, int brightnessThreshold) :
 	// Arbitary defaults
 	lastSample(0),
 	ignoreUntilTime(0),
-	lastPosEdgeTime(0),
+	lastEdgeTime(0),
 	syncPulseBufHead(0)
 {
 	// Do nothing
@@ -30,81 +30,58 @@ UnicomReceiver::refresh()
 {
 	// Get current time
 	unsigned long time = millis();
+	bool currentSample = sample();
+	bool edge          = currentSample != lastSample;
+	bool edgeDirection = currentSample;
+	lastSample = currentSample;
 	
-	switch (state) {
-		case STATE_SYNCING:
-			// If not ignoring [i.e. debouncing]
-			if (ignoreUntilTime < time) {
-				bool currentSample = sample();
-				
-				// Posedge seen, try to lock onto the frequency
-				if (currentSample && !lastSample) {
-					bool locked = syncPulseBufPush(time - lastPosEdgeTime);
-					
-					if (locked) {
-						state = STATE_LOCKED;
-						Serial.print("Locked @ ");
-						Serial.print(1000ul / period);
-						Serial.println("Hz");
-						ignoreUntilTime = time + ignoreWindow;
-						lastPosEdgeTime = 0;
-						lastEdgeTime = time;
-					} else {
-						ignoreUntilTime = time + (MIN_PERIOD >> 1);
-						lastPosEdgeTime = time;
-					}
-				}
-				
-				lastSample = currentSample;
-			}
-			break;
-		
-		case STATE_LOCKED:
-		case STATE_RECEIVING:
-			bool currentSample = sample();
+	if (ignoreUntilTime < time) {
+		// If we've hit an edge, when syncing it must be a positive edge but
+		// otherwise it can be any edge.
+		if (edge && (state != STATE_SYNCING || edgeDirection == 1)) {
+			unsigned long period = time - lastEdgeTime;
+			lastEdgeTime = time;
 			
-			// If not ignoring [i.e. waiting til just before the edge]
-			if (ignoreUntilTime < time) {
-				if ((ignoreUntilTime + acceptanceWindow) > time) {
-					// Within acceptance window, did we see an edge?
-					if (lastSample != currentSample) {
-						if (syncPulseBufPush(time - lastEdgeTime)) {
-							if (state == STATE_RECEIVING) {
-								byteReceived = (byteReceived << 1) | currentSample;
-								if (++bitsReceived == 8) {
-									Serial.print(byteReceived);
-									bitsReceived = 0;
-								}
-							}
-							
-							if (state == STATE_LOCKED && !currentSample) {
-								state = STATE_RECEIVING;
-								bitsReceived = 0;
-							}
-							
-							ignoreUntilTime = time + ignoreWindow;
-							lastEdgeTime = time;
-						} else {
-							// Sync lost
-							Serial.println("Lost on edge");
-							state = STATE_SYNCING;
-							syncPulseBufClear();
-						}
-					}
-					
-					lastSample = currentSample;
-				} else {
-					// Acceptance window expired without a pulse - sync lost
-					Serial.println("Lost on missing edge");
-					state = STATE_SYNCING;
-					syncPulseBufClear();
-				}
+			if (isPeriodStable(period)) {
+				// If the period goes stable, lock on
+				if (state == STATE_SYNCING)
+					state = STATE_LOCKED;
 			} else {
-				lastSample = currentSample;
+				// If the period is unstable and we were previously locked, reset the
+				// period tracker to ensure we don't quickly reconnect without a propper
+				// sync signal.
+				if (state != STATE_SYNCING)
+					periodTrackerReset();
+				
+				state = STATE_SYNCING;
 			}
-			break;
+			
+			if (state == STATE_SYNCING) {
+				ignoreUntilTime = time + (MIN_PERIOD >> 1);
+			} else {
+				ignoreUntilTime = time + ignoreWindow;
+				onBitReceived(edgeDirection);
+			}
+		} else if (state != STATE_SYNCING
+		           && (ignoreUntilTime + acceptanceWindow) < time) {
+			// If we're not syncing and we don't see an edge before the end of the
+			// acceptance window, we've lost the connection and must re-sync.
+			periodTrackerReset();
+			state = STATE_SYNCING;
+		}
 	}
+	
 } // UnicomReceiver::refresh
+
+
+void
+UnicomReceiver::onBitReceived(bool bit)
+{
+	if (state == STATE_LOCKED && bit == 0)
+		state = STATE_RECEIVING;
+	else if (state == STATE_RECEIVING)
+		Serial.println(bit);
+} // UnicomReceiver::onBitReceived
 
 
 /**
@@ -118,21 +95,17 @@ UnicomReceiver::sample()
 
 
 /**
- * Push a pulse duration onto the buffer.
+ * Uses historical values of the period to determine if the period is stable.
  *
  * @return Is the period 'stable'?
  */
 bool
-UnicomReceiver::syncPulseBufPush(unsigned long duration)
+UnicomReceiver::isPeriodStable(unsigned long currentPeriod)
 {
-	// Add duration to buffer
-	syncPulseBuf[syncPulseBufHead++] = duration;
+	// Record the current period
+	periodTrackerPush(currentPeriod);
 	
-	// Wrap around buffer
-	if (syncPulseBufHead >= SYNC_DURATION)
-		syncPulseBufHead = 0;
-	
-	// Calculate average period and range of periods
+	// Calculate average and range of periods
 	unsigned long min = syncPulseBuf[0];
 	unsigned long max = syncPulseBuf[0];
 	period = 0ul;
@@ -146,27 +119,39 @@ UnicomReceiver::syncPulseBufPush(unsigned long duration)
 	// Period = Average(sum of periods)
 	period = period >> LOG_SYNC_DURATION;
 	
-	// acceptanceWindow = period / 2
+	// Calculate the acceptanceWindow = period / 2
 	acceptanceWindow = period >> 1;
 	
-	// Maximum allowed range
-	unsigned long maxRange = acceptanceWindow;
+	// Calculate the maximum allowed jitter
+	unsigned long maxJitter = MIN(acceptanceWindow, MAX_JITTER);
 	
-	// Range of values currently in the buffer
-	unsigned long range = max - min;
+	// Range of values currently in the buffer is the "jitter" estimate
+	unsigned long jitter = max - min;
 	
-	// Ignore window = 3/4 * period
+	// Calculate ignore window = 3/4 * period
 	ignoreWindow = acceptanceWindow + (acceptanceWindow>>1);
 	
-	return (range < MIN(maxRange, MAX_JITTER))
+	return (jitter < maxJitter)
 	       && (period > MIN_PERIOD)
 	       && (period < MAX_PERIOD);
-} // UnicomReceiver::syncPulseBufPush
+} // UnicomReceiver::isPeriodStable
 
 
 void
-UnicomReceiver::syncPulseBufClear()
+UnicomReceiver::periodTrackerPush(unsigned long period)
+{
+	// Add period to buffer
+	syncPulseBuf[syncPulseBufHead++] = period;
+	
+	// Wrap around buffer
+	if (syncPulseBufHead >= SYNC_DURATION)
+		syncPulseBufHead = 0;
+} // UnicomReceiver::periodTrackerPush
+
+
+void
+UnicomReceiver::periodTrackerReset()
 {
 	for (int i = 0; i < SYNC_DURATION; i++)
 		syncPulseBuf[i] = 0ul;
-} // UnicomReceiver::syncPulseBufClear
+} // UnicomReceiver::periodTrackerReset

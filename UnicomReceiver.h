@@ -40,9 +40,6 @@ class UnicomReceiver {
 		// Time until which no samples are taken
 		unsigned long ignoreUntilTime;
 		
-		// Time last posedge occurred
-		unsigned long lastPosEdgeTime;
-		
 		// Time last edge seen
 		unsigned long lastEdgeTime;
 		
@@ -75,8 +72,12 @@ class UnicomReceiver {
 	private:
 		bool sample();
 		
-		bool syncPulseBufPush(unsigned long duration);
-		void syncPulseBufClear();
+		bool isPeriodStable(unsigned long period);
+		
+		void periodTrackerPush(unsigned long period);
+		void periodTrackerReset();
+		
+		void onBitReceived(bool bit);
 };
 
 
