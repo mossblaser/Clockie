@@ -8,13 +8,15 @@
 
 
 class UnicomReceiver {
-	private:
+	public:
 		// State machine states
 		typedef enum state {
 			STATE_SYNCING,
 			STATE_LOCKED,
 			STATE_RECEIVING,
 		} state_t;
+	
+	private:
 		
 		// Minimum period allowed (msec)
 		static const unsigned int MIN_PERIOD = 50;
@@ -73,8 +75,7 @@ class UnicomReceiver {
 		void refresh();
 		bool getByte(char *byte);
 		
-		bool isLocked();
-		bool isReceiving();
+		state_t getState();
 	
 	private:
 		bool sample();

@@ -117,18 +117,11 @@ UnicomReceiver::getByte(char *byte)
 } // UnicomReceiver::getByte
 
 
-bool
-UnicomReceiver::isLocked()
+UnicomReceiver::state_t
+UnicomReceiver::getState()
 {
-	return state == STATE_LOCKED;
-} // UnicomReceiver::isLocked
-
-
-bool
-UnicomReceiver::isReceiving()
-{
-	return state == STATE_RECEIVING;
-} // UnicomReceiver::isReceiving
+	return state;
+} // UnicomReceiver::getState
 
 
 /**
