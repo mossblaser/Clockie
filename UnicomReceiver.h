@@ -50,8 +50,12 @@ class UnicomReceiver {
 		// Current clock period
 		unsigned long period;
 		
-		// Byte reciever
+		// Byte receiver
 		int bitsReceived;
+		unsigned char byteBuffer;
+		
+		// Data receiver
+		bool byteReady;
 		unsigned char byteReceived;
 		
 		// Time in which an expected edge is allowed to occur
@@ -67,7 +71,10 @@ class UnicomReceiver {
 		~UnicomReceiver();
 		
 		void refresh();
-		void refreshSync();
+		bool getByte(char *byte);
+		
+		bool isLocked();
+		bool isReceiving();
 	
 	private:
 		bool sample();

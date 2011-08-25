@@ -25,6 +25,9 @@ UnicomReceiver::~UnicomReceiver()
 } // UnicomReceiver::~UnicomReceiver
 
 
+/**
+ * Insert this into your main loop.
+ */
 void
 UnicomReceiver::refresh()
 {
@@ -77,11 +80,55 @@ UnicomReceiver::refresh()
 void
 UnicomReceiver::onBitReceived(bool bit)
 {
-	if (state == STATE_LOCKED && bit == 0)
+	if (state == STATE_LOCKED && bit == 0) {
 		state = STATE_RECEIVING;
-	else if (state == STATE_RECEIVING)
-		Serial.println(bit);
+		bitsReceived = 0;
+	} else if (state == STATE_RECEIVING) {
+		bitsReceived++;
+		byteBuffer <<= 1;
+		byteBuffer |= bit;
+		
+		if (bitsReceived == 8) {
+			byteReady = true;
+			byteReceived = byteBuffer;
+			bitsReceived = 0;
+		}
+	}
 } // UnicomReceiver::onBitReceived
+
+
+/**
+ * Returns true if a byte has been read since the last time this function was
+ * called. Places the byte in the char pointed to by the argument.
+ *
+ * @param *byte Pointer to a char into which to place the received byte.
+ * @return Whether a byte was received since last calling this function.
+ */
+bool
+UnicomReceiver::getByte(char *byte)
+{
+	if (byteReady) {
+		*byte = byteReceived;
+		byteReady = false;
+		return true;
+	} else {
+		return false;
+	}
+} // UnicomReceiver::getByte
+
+
+bool
+UnicomReceiver::isLocked()
+{
+	return state == STATE_LOCKED;
+} // UnicomReceiver::isLocked
+
+
+bool
+UnicomReceiver::isReceiving()
+{
+	return state == STATE_RECEIVING;
+} // UnicomReceiver::isReceiving
 
 
 /**
