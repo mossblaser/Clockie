@@ -1,11 +1,12 @@
 Clockie
 =======
 
-Clockie is a really simple clock I made for Ann-Marie (my girlfriend) when she
-moved away for her master's degree. It is based on an Arduino and a simple LCD
-character display and features a countdown until we next meet (d'awwwww).  The
-time (and the date of our next meeting) is set by holding it up to a web page
-which literally flashes the time at a light sensor on the back of the clock.
+Clockie is a really simple clock I made for my wonderful girlfriend, Ann-Marie,
+when she moved away for her master's degree. It is based on an Arduino and a
+simple LCD character display and features a countdown until we next meet
+(d'awwwww).  The time (and the date of our next meeting) is set by holding it up
+to a web page which literally flashes the time at a light sensor on the back of
+the clock.
 
 **Video: http://www.youtube.com/watch?v=T5hS6n_OzEQ**
 
@@ -32,8 +33,8 @@ set your clock? Inspired by the blinding glow of opening a white terminal window
 in a dark room late at night I realised I could use a web page and a light
 sensor to interface with the computer.
 
-Building Hardware
------------------
+Building Clockie
+----------------
 
 Clockie is made out of:
 
@@ -79,4 +80,24 @@ everything down to a blistering 5 bits per second meaning that setting the time
 takes just under 13 seconds. Sadly this wrote off any possibility of sending
 messages as well as the time as they would take far too long to send.
 
+I originally wrote a simple Java-script system for generating the required
+flashing patterns but was soon foiled by Internet Explorer 6's stunning
+performance on old computers and so I resorted to a Flash/Action-script version.
 
+There are quite a few fun details in the implementation such as detecting when
+we're actually looking at a screen and working out how bright white and black
+are on a screen whose brightness and external lighting is unknown.
+
+Disclaimers
+-----------
+
+The code is a bit of a mess due to the experimental, one-off nature of the
+project. Sorry about that!
+
+Manchester encoding is not the fastest method I could have used in the
+circumstances. Because I have to flash the screen twice per bit there is an
+unnecessarily high demand on the sender's performance. Using something Morse
+code like and using the delay between each flash would allow me to roughly
+double the transmission speed and also greatly simplify the implementation. On
+the other hand, the sentimental value (and the fun had in the implementation)
+make it all worthwhile :).
