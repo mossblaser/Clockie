@@ -3,12 +3,12 @@ Clockie
 
 **Video: http://www.youtube.com/watch?v=T5hS6n_OzEQ**
 
-Clockie is a really simple clock I made for my wonderful girlfriend, Ann-Marie,
-when she moved away for her master's degree. It is based on an Arduino and a
-simple LCD character display and features a countdown until we next meet
-(d'awwwww).  The time (and the date of our next meeting) is set by holding it up
-to a web page which literally flashes the time at a light sensor on the back of
-the clock.
+Clockie is a really simple clock I made for my girlfriend, Ann-Marie, when she
+moved away for her master's degree. It is based on an Arduino and a simple LCD
+character display and features a countdown until we next meet (d'awwwww).  The
+time (and the date of our next meeting) is set by holding it up to a `web page
+<http://amp.jhnet.co.uk/programmer/>`_ which literally flashes the time at a
+light sensor on the back of the clock.
 
 .. figure:: https://raw.github.com/mossblaser/Clockie/master/images/moneyshot.jpg
 	
