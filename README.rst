@@ -12,8 +12,8 @@ which literally flashes the time at a light sensor on the back of the clock.
 	Clockie being set (left), showing the countdown (top right) and its
 	presentation gift-box (bottom right).
 
-Why?
-----
+Why This Design?
+----------------
 
 When I designed Clockie I was temporarily living in Sheffield for my summer job
 at ARM and so only had a handful of components available. In particular, I
@@ -42,6 +42,9 @@ Clockie is made out of:
 * An LDR (light-dependant resistor, not long distance relationship...)
 * A random plastic case I had lying around
 
-.. figure:: https://raw.github.com/mossblaser/Clockie/master/images/case.jpg
-	
-	Making the case.
+The case (and the drill used to cut it up) was stolen from my dad (a dentist)
+and finally stuck together using that most premium of materials: white-tack.
+
+.. image:: https://raw.github.com/mossblaser/Clockie/master/images/case.jpg
+
+
