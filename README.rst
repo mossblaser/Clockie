@@ -51,8 +51,8 @@ white-tack. The Arduino and LDR were simply glued into the box and the LCD
 screwed into the lid.
 
 A `potential-divider <http://en.wikipedia.org/wiki/Voltage_divider>`_ circuit
-which allows the Arduino to measure the LDR's resistance and thus the amount of
-light. This was precariously soldered together between the legs of the LDR which
+allows the Arduino to measure the LDR's resistance and thus the amount of light.
+This was precariously soldered together between the legs of the LDR which
 appeared to work reasonably well despite the awful wire I had lying around.
 
 .. image:: https://raw.github.com/mossblaser/Clockie/master/images/case.jpg
@@ -73,16 +73,17 @@ complicated and doesn't really offer any advantages in this case.
 
 Video of the prototype system: http://www.youtube.com/watch?v=1osQdIe3dp8
 
-The prototype worked rather well on my computer late the night I built it but
+The prototype worked rather well on my computer late on the night I built it but
 unfortunately didn't work so reliably on other random computers I tried.  To
 make things work reliably on slow computers and slow-to-update screens I slowed
 everything down to a blistering 5 bits per second meaning that setting the time
 takes just under 13 seconds. Sadly this wrote off any possibility of sending
-messages as well as the time as they would take far too long to send.
+messages as well as the time because they would take far too long to send.
 
-I originally wrote a simple Java-script system for generating the required
+I originally wrote a simple JavaScript system for generating the required
 flashing patterns but was soon foiled by Internet Explorer 6's stunning
-performance on old computers and so I resorted to a Flash/Action-script version.
+performance on old computers and so I resorted to a ActionScript/Flash based
+version.
 
 There are quite a few fun details in the implementation such as detecting when
 we're actually looking at a screen and working out how bright white and black
