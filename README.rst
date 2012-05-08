@@ -7,7 +7,7 @@ character display and features a countdown until we next meet (d'awwwww).  The
 time (and the date of our next meeting) is set by holding it up to a web page
 which literally flashes the time at a light sensor on the back of the clock.
 
-Video: http://www.youtube.com/watch?v=T5hS6n_OzEQ
+**Video: http://www.youtube.com/watch?v=T5hS6n_OzEQ**
 
 .. figure:: https://raw.github.com/mossblaser/Clockie/master/images/moneyshot.jpg
 	
@@ -49,7 +49,7 @@ dentist) and finally stuck together using that most premium of materials:
 white-tack. The Arduino and LDR were simply glued into the box and the LCD
 screwed into the lid.
 
-A `potential-divider <http://en.wikipedia.org/wiki/Voltage_divider>` circuit
+A `potential-divider <http://en.wikipedia.org/wiki/Voltage_divider>`_ circuit
 which allows the Arduino to measure the LDR's resistance and thus the amount of
 light. This was precariously soldered together between the legs of the LDR which
 appeared to work reasonably well despite the awful wire I had lying around.
@@ -65,7 +65,7 @@ Communication
 The clock requires the current time and the time of our next meeting to be
 transmitted. These take the form of a pair of 32-bit UNIX timestamps (the number
 of seconds since 1970). To transmit the data I used `Manchester encoding
-<http://en.wikipedia.org/wiki/Manchester_code>`. I could have used something
+<http://en.wikipedia.org/wiki/Manchester_code>`_. I could have used something
 similar to Morse code but seeing as we were both at the University of Manchester
 where it was invented it seemed rather fitting even though it is rather more
 complicated and doesn't really offer any advantages in this case.
