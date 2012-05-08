@@ -3,6 +3,8 @@
 
 #include "WProgram.h"
 
+#define THRESH_SPEED 4
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -35,6 +37,8 @@ class UnicomReceiver {
 		// Sensing parameters
 		int analogPin;
 		int brightnessThreshold;
+		int minBrightness;
+		int maxBrightness;
 		
 		// Last value seen
 		bool lastSample;
@@ -69,17 +73,17 @@ class UnicomReceiver {
 		unsigned long ignoreWindow;
 		
 	public:
-		UnicomReceiver(int analogPin, int brightnessThreshold);
+		UnicomReceiver(int analogPin);
 		~UnicomReceiver();
 		
 		void refresh();
 		bool getByte(char *byte);
+		int getBitsReceived();
+		unsigned long getPeriod();
 		
 		state_t getState();
 	
 	private:
-		bool sample();
-		
 		bool isPeriodStable(unsigned long period);
 		
 		void periodTrackerPush(unsigned long period);

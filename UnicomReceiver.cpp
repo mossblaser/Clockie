@@ -1,10 +1,12 @@
 #include "WProgram.h"
 #include "UnicomReceiver.h"
 
+#define MIN(x,y) (((x)<(y)) ? (x) : (y))
+#define MAX(x,y) (((x)>(y)) ? (x) : (y))
 
-UnicomReceiver::UnicomReceiver(int analogPin, int brightnessThreshold) :
+
+UnicomReceiver::UnicomReceiver(int analogPin) :
 	analogPin(analogPin),
-	brightnessThreshold(brightnessThreshold),
 	
 	// When we start we need to sync
 	state(STATE_SYNCING),
@@ -32,11 +34,20 @@ void
 UnicomReceiver::refresh()
 {
 	// Get current time
+	int brightness = analogRead(analogPin);
 	unsigned long time = millis();
-	bool currentSample = sample();
+	bool currentSample = brightness > brightnessThreshold;
 	bool edge          = currentSample != lastSample;
 	bool edgeDirection = currentSample;
 	lastSample = currentSample;
+	
+	// Adaptive threshold setting
+	if (state != STATE_RECEIVING) {
+		int brightnessShifted = brightness << THRESH_SPEED;
+		minBrightness = MIN(brightnessShifted, minBrightness+1);
+		maxBrightness = MAX(brightnessShifted, maxBrightness-1);
+		brightnessThreshold = (minBrightness + maxBrightness) >> (THRESH_SPEED+1);
+	}
 	
 	if (ignoreUntilTime < time) {
 		// If we've hit an edge, when syncing it must be a positive edge but
@@ -117,21 +128,25 @@ UnicomReceiver::getByte(char *byte)
 } // UnicomReceiver::getByte
 
 
+int
+UnicomReceiver::getBitsReceived()
+{
+	return bitsReceived;
+} // UnicomReceiver::getBitsReceived
+
+
+unsigned long
+UnicomReceiver::getPeriod()
+{
+	return period;
+} // UnicomReceiver::getPeriod
+
+
 UnicomReceiver::state_t
 UnicomReceiver::getState()
 {
 	return state;
 } // UnicomReceiver::getState
-
-
-/**
- * Sample the analog input.
- */
-bool
-UnicomReceiver::sample()
-{
-	return analogRead(analogPin) > brightnessThreshold;
-} // UnicomReceiver::sample
 
 
 /**
